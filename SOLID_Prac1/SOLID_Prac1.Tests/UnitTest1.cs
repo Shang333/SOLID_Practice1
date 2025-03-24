@@ -237,7 +237,7 @@ namespace SOLID_Prac1.Tests
         }
         #endregion
 
-        #region ReportGenerator
+        #region ReportGeneratorTest
         [Test] // 確認 GenerateReport() 回傳的是 IReport.Generate() 的結果
         public void ReportGenerator_GenerateReport_ReturnsExpectedResult()
         {
