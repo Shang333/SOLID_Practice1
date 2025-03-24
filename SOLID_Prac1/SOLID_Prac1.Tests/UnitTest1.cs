@@ -235,7 +235,59 @@ namespace SOLID_Prac1.Tests
 
             Assert.That(ex.Message, Does.Contain("has been registered"));
         }
+        #endregion
 
+        #region ReportGenerator
+        [Test] // 確認 GenerateReport() 回傳的是 IReport.Generate() 的結果
+        public void ReportGenerator_GenerateReport_ReturnsExpectedResult()
+        {
+            // Arrange
+            var mockReport = new Mock<IReport>();
+            mockReport.Setup(r => r.Generate()).Returns("報表內容");
+
+            var generator = new ReportGenerator(mockReport.Object);
+
+            // Act
+            var result = generator.GenerateReport();
+
+            // Assert
+            Assert.AreEqual("報表內容", result);
+        }
+
+        [Test] // "行為驗證": 驗證 Generate() 是否被呼叫過一次
+        public void ReportGenerator_GenerateReport_CallsReportGenerate()
+        {
+            // Arrange
+            var mockReport = new Mock<IReport>();
+
+            var generator = new ReportGenerator(mockReport.Object);
+
+            // Act
+            generator.GenerateReport();
+
+            // Assert
+            mockReport.Verify(r => r.Generate(), Times.Once);
+        }
+
+        [Test] // "例外錯誤": 當 IReport.Generate() 丟出 InvalidOperationException，ReportGenerator.GenerateReport() 也會丟出這個例外
+        public void ReportGenerator_GenerateReport_WhenReportThrowsException_ShouldPropagate()
+        {
+            // Arrange
+            var mockReport = new Mock<IReport>();
+            mockReport
+                .Setup(r => r.Generate())
+                .Throws(new InvalidOperationException("報表產生失敗"));
+
+            var generator = new ReportGenerator(mockReport.Object);
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                generator.GenerateReport();
+            });
+
+            Assert.That(ex.Message, Is.EqualTo("報表產生失敗"));
+        }
         #endregion
     }
 }
