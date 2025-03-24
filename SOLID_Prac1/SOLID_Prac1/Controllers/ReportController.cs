@@ -37,7 +37,7 @@ namespace SOLID_Prac1.Controllers
         }
 
         /// <summary>
-        /// 自訂範例：可指定報表類型與大小上限
+        /// 自訂範例：可指定報表類型與大小上限(pdf、doc、xlsx)
         /// </summary>
         [HttpGet("custom")]
         public IActionResult GetCustom([FromQuery] string type = "pdf", [FromQuery] int maxSize = 50)
