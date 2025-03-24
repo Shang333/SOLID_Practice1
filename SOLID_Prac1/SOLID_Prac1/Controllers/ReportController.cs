@@ -55,17 +55,16 @@ namespace SOLID_Prac1.Controllers
         }
 
         [HttpPost("upload")]
-        public async Task<IActionResult> Upload(IFormFile file, [FromServices] IFileValidator validator, [FromServices] IFileStorage storage)
+        public async Task<IActionResult> Upload(IFormFile file, [FromServices] IEnumerable<IFileValidator> validators, [FromServices] IFileStorage fileStorage)
         {
-            if (file == null || file.Length == 0)
-            {
-                return BadRequest(new { error = "請選擇一個檔案上傳。" });
-            }
-
             try
             {
-                validator.Validate(file);
-                var savedPath = await storage.SaveAsync(file);
+                foreach (var validator in validators)
+                {
+                    validator.Validate(file);
+                }
+
+                var savedPath = await fileStorage.SaveAsync(file);
 
                 return Ok(new
                 {
@@ -80,7 +79,5 @@ namespace SOLID_Prac1.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
-
     }
-
 }
