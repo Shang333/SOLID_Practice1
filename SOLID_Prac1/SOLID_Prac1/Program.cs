@@ -8,6 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddTransient<PdfReport>();
 builder.Services.AddTransient<DocReport>();
 builder.Services.AddTransient<XlsxReport>();
+builder.Services.AddTransient<IFileValidator, ExtensionValidator>();
+builder.Services.AddTransient<IFileStorage, LocalFileStorage>();
 
 // 報表工廠
 builder.Services.AddSingleton<IReportFactory, ReportFactory>();

@@ -53,6 +53,34 @@ namespace SOLID_Prac1.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+        [HttpPost("upload")]
+        public async Task<IActionResult> Upload(IFormFile file, [FromServices] IFileValidator validator, [FromServices] IFileStorage storage)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest(new { error = "請選擇一個檔案上傳。" });
+            }
+
+            try
+            {
+                validator.Validate(file);
+                var savedPath = await storage.SaveAsync(file);
+
+                return Ok(new
+                {
+                    message = "檔案上傳成功",
+                    fileName = file.FileName,
+                    size = file.Length,
+                    path = savedPath
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
     }
 
 }
