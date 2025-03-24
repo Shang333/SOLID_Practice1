@@ -1,20 +1,28 @@
+using SOLID_Prac1.DTO;
 using SOLID_Prac1.Interface;
 using SOLID_Prac1.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// 綁定 UploadSettings 設定區段
+builder.Services.Configure<UploadSettings>(
+    builder.Configuration.GetSection("UploadSettings"));
 
 // Add services to the container.
 // 註冊報表原始本體
 builder.Services.AddTransient<PdfReport>();
 builder.Services.AddTransient<DocReport>();
 builder.Services.AddTransient<XlsxReport>();
-//builder.Services.AddTransient<IFileValidator, ExtensionValidator>();
+
+// 驗證器
 builder.Services.AddTransient<IFileValidator, FileExistenceValidator>();
-builder.Services.AddTransient<IFileValidator, FileExistenceValidator>();
-builder.Services.AddTransient<IFileValidator>(sp => new FileSizeValidator(5 * 1024 * 1024)); // 5MB
-builder.Services.AddTransient<IFileValidator>(sp => new ExtensionValidator(new[] { ".pdf", ".doc", ".docx", ".xlsx", ".csv" }));
+builder.Services.AddTransient<IFileValidator, FileSizeValidator>();      // 透過 IOptions 讀取 MaxUploadSize
+builder.Services.AddTransient<IFileValidator, ExtensionValidator>();     // 透過 IOptions 讀取 AllowedExtensions
 builder.Services.AddTransient<IFileValidator, FileNameValidator>();
+
+// 儲存實作
 builder.Services.AddTransient<IFileStorage, LocalFileStorage>();
+
 // 報表工廠
 builder.Services.AddSingleton<IReportFactory, ReportFactory>();
 

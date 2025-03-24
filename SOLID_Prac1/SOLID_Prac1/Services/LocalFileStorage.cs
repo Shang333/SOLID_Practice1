@@ -1,21 +1,27 @@
-﻿using SOLID_Prac1.Interface;
+﻿using Microsoft.Extensions.Options;
+using SOLID_Prac1.DTO;
+using SOLID_Prac1.Interface;
 
-namespace SOLID_Prac1.Services
+public class LocalFileStorage : IFileStorage
 {
-    public class LocalFileStorage : IFileStorage
+    private readonly string _uploadPath;
+
+    public LocalFileStorage(IOptions<UploadSettings> options)
     {
-        private readonly string _uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "UploadedReports");
+        _uploadPath = Path.Combine(Directory.GetCurrentDirectory(), options.Value.UploadPath);
+    }
 
-        public async Task<string> SaveAsync(IFormFile file)
-        {
-            if (!Directory.Exists(_uploadPath))
-                Directory.CreateDirectory(_uploadPath);
+    public async Task<string> SaveAsync(IFormFile file)
+    {
+        if (!Directory.Exists(_uploadPath))
+            Directory.CreateDirectory(_uploadPath);
 
-            var filePath = Path.Combine(_uploadPath, Path.GetFileName(file.FileName));
-            using var stream = new FileStream(filePath, FileMode.Create);
-            await file.CopyToAsync(stream);
+        var fileName = Path.GetFileName(file.FileName);
+        var filePath = Path.Combine(_uploadPath, fileName);
 
-            return filePath;
-        }
+        using var stream = new FileStream(filePath, FileMode.Create);
+        await file.CopyToAsync(stream);
+
+        return filePath;
     }
 }
