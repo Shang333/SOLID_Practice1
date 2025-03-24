@@ -8,12 +8,10 @@ namespace SOLID_Prac1.Controllers
     [Route("[controller]/[Action]")]
     public class ReportController : ControllerBase
     {
-        private readonly ReportGenerator _generator;
         private readonly IReportFactory _reportFactory;
 
-        public ReportController(ReportGenerator generator, IReportFactory reportFactory)
+        public ReportController(IReportFactory reportFactory)
         {
-            _generator = generator;
             _reportFactory = reportFactory;
         }
 

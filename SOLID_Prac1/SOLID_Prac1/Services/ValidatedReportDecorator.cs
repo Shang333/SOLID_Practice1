@@ -25,5 +25,4 @@ namespace SOLID_Prac1.Services
             return content;
         }
     }
-
 }
