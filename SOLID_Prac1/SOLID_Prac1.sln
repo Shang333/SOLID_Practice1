@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SOLID_Prac1", "SOLID_Prac1\SOLID_Prac1.csproj", "{7F4C93EB-7790-4BFE-96CD-7131C4F6E9A2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SOLID_Prac1.Tests", "SOLID_Prac1.Tests\SOLID_Prac1.Tests.csproj", "{64BF5766-EA81-419C-9F34-1AFC28B04071}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{7F4C93EB-7790-4BFE-96CD-7131C4F6E9A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F4C93EB-7790-4BFE-96CD-7131C4F6E9A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F4C93EB-7790-4BFE-96CD-7131C4F6E9A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64BF5766-EA81-419C-9F34-1AFC28B04071}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64BF5766-EA81-419C-9F34-1AFC28B04071}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64BF5766-EA81-419C-9F34-1AFC28B04071}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64BF5766-EA81-419C-9F34-1AFC28B04071}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
