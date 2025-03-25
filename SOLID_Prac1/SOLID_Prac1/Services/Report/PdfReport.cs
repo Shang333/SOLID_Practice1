@@ -6,7 +6,7 @@ namespace SOLID_Prac1.Services.Report
     {
         public string Generate()
         {
-            return "This is a PDF Report.";
+            return "This is a PDF (.pdf) Report.";
         }
     }
 }

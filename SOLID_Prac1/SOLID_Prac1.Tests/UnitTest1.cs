@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SOLID_Prac1.Interface;
 using SOLID_Prac1.Services.Report;
 using SOLID_Prac1.Services.Validator;
+using System.ComponentModel.DataAnnotations;
 
 namespace SOLID_Prac1.Tests
 {
@@ -15,6 +16,47 @@ namespace SOLID_Prac1.Tests
         public void Setup()
         {
         }
+
+        #region ReportClassTest
+        [TestCase(typeof(PdfReport), "This is a PDF (.pdf) Report.")]
+        [TestCase(typeof(DocReport), "This is a Word (.doc) Report.")]
+        [TestCase(typeof(XlsxReport), "This is an Excel (.xlsx) Report.")]
+        public void Report_Generate_ReturnsExpectedContent(Type reportType, string expected)
+        {
+            var report = (IReport)Activator.CreateInstance(reportType);
+            var result = report.Generate();
+
+            Console.WriteLine($"Report Type: {reportType.Name}");
+            Console.WriteLine($"Expected: {expected}");
+            Console.WriteLine($"Actual:   {result}");
+
+            Assert.AreEqual(expected, result);
+        }
+        //[Test]
+        //public void PdfReport_Generate_ReturnsExpectedContent()
+        //{
+        //    var report = new PdfReport();
+        //    var result = report.Generate();
+        //    Assert.AreEqual("This is a Pdf (.pdf) Report.", result);
+        //}
+
+        //[Test]
+        //public void DocReport_Generate_ReturnsExpectedContent()
+        //{
+        //    var report = new DocReport();
+        //    var result = report.Generate();
+        //    Assert.AreEqual("This is a Word (.doc) Report.", result);
+        //}
+
+        //[Test]
+        //public void XlsxReport_Generate_ReturnsExpectedContent()
+        //{
+        //    var report = new XlsxReport();
+        //    var result = report.Generate();
+        //    Assert.AreEqual("This is an Excel (.xlsx) Report.", result);
+        //}
+        #endregion
+
         #region FileNameTest
         [Test]
         public void FileNameValidator_WithValidFileName_DoesNotThrowException()
@@ -47,7 +89,9 @@ namespace SOLID_Prac1.Tests
 
             Assert.That(ex.Message, Is.EqualTo("檔名包含不合法字元（.. / \\ '）"));
         }
+        #endregion
 
+        #region ExtensionValidator
         [Test]
         public void ExtensionValidator_WithUnsupportedExtension_ThrowsException()
         {
@@ -96,6 +140,39 @@ namespace SOLID_Prac1.Tests
             {
                 validator.Validate(mockFile.Object);
             });
+        }
+
+        // 多組副檔名測試
+        [TestCase("test.pdf", true)]
+        [TestCase("test.doc", true)]
+        [TestCase("test.exe", false)]
+        public void ExtensionValidator_TestCases(string fileName, bool shouldPass)
+        {
+            var settings = new UploadSettings
+            {
+                AllowedExtensions = new[] { ".pdf", ".doc", ".xlsx" }
+            };
+
+            var options = new Mock<IOptions<UploadSettings>>();
+            options.Setup(o => o.Value).Returns(settings);
+
+            var validator = new ExtensionValidator(options.Object);
+
+            var mockFile = new Mock<IFormFile>();
+            mockFile.Setup(f => f.FileName).Returns(fileName);
+
+            if (shouldPass)
+            {
+                Assert.DoesNotThrow(() => validator.Validate(mockFile.Object));
+            }
+            else
+            {
+                var ex = Assert.Throws<InvalidOperationException>(() =>
+                {
+                    validator.Validate(mockFile.Object);
+                });
+                Console.WriteLine($"驗證失敗訊息：{ex.Message}");
+            }
         }
         #endregion
 
@@ -181,6 +258,61 @@ namespace SOLID_Prac1.Tests
 
             // Act & Assert
             Assert.DoesNotThrow(() => validator.Validate(mockFile.Object));
+        }
+
+        [TestCase("valid.pdf", 1000, true)]
+        [TestCase("bad..name.pdf", 1000, false)]
+        [TestCase("valid.exe", 1000, false)]
+        [TestCase("valid.pdf", 0, false)]
+        public void Validators_FullValidationProcess_WorksAsExpected(string fileName, long size, bool shouldPass)
+        {
+            // Arrange: 模擬檔案
+            var mockFile = new Mock<IFormFile>();
+            mockFile.Setup(f => f.FileName).Returns(fileName);
+            mockFile.Setup(f => f.Length).Returns(size);
+
+            // 準備 validators
+            var options = new Mock<IOptions<UploadSettings>>();
+            options.Setup(o => o.Value).Returns(new UploadSettings
+            {
+                AllowedExtensions = new[] { ".pdf", ".doc", ".xlsx" },
+                MaxUploadSize = 5 * 1024 * 1024 // 5MB
+            });
+
+            var validators = new List<IFileValidator>
+                                {
+                                    new FileExistenceValidator(),
+                                    new FileNameValidator(),
+                                    new ExtensionValidator(options.Object),
+                                    new FileSizeValidator(options.Object)
+                                };
+
+            // 建立 fake report + decorator
+            var fakeReport = new TestPdfReport
+            {
+                File = mockFile.Object
+            };
+
+            var decorator = new ValidatedReportDecorator(fakeReport, validators);
+
+            // Act & Assert
+            if (shouldPass)
+            {
+                var result = decorator.Generate();
+                Assert.AreEqual("Fake Pdf Content", result);
+                Assert.IsTrue(fakeReport.WasGenerateCalled);
+            }
+            else
+            {
+                var ex = Assert.Throws<InvalidOperationException>(() =>
+                {
+                    decorator.Generate();
+                });
+
+                Console.WriteLine($"驗證錯誤訊息：{ex.Message}");
+                //Assert.IsFalse(fakeReport.WasGenerateCalled);
+                Assert.IsFalse(fakeReport.WasGenerateCalled, "Generate() 不應該被呼叫！");
+            }
         }
         #endregion
 
