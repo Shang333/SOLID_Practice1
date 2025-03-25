@@ -181,60 +181,6 @@ namespace SOLID_Prac1.Tests
             // Act & Assert
             Assert.DoesNotThrow(() => validator.Validate(mockFile.Object));
         }
-
-        [Test]
-        public void ReportFactory_WithPdfType_ReturnsValidatedReportDecorator()
-        {
-            // Arrange
-            var mockPdfReport = new Mock<PdfReport>();
-
-            var fakeProvider = new FakeServiceProvider();
-            fakeProvider.Register<PdfReport>(mockPdfReport.Object);
-
-            var factory = new ReportFactory(fakeProvider);
-
-            // Act
-            var result = factory.Create("pdf", 1024);
-
-            // Assert
-            Assert.IsInstanceOf<ValidatedReportDecorator>(result);
-        }
-
-        [Test]
-        public void ReportFactory_WithUnsupportedType_ThrowsArgumentException()
-        {
-            // Arrange
-            //var mockDocReport = new Mock<DocReport>(); // 因為要傳錯誤型別，所以不須註冊任何report
-
-            var fakeProvider = new FakeServiceProvider();
-            //fakeProvider.Register<DocReport>(mockDocReport.Object); // 因為要傳錯誤型別，所以不須註冊
-   
-            var factory = new ReportFactory(fakeProvider);
-
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() =>
-            {
-                factory.Create("zip", 1024);
-            });
-
-            Assert.That(ex.Message, Is.EqualTo("Unsupported report type: zip"));
-        }
-
-        [Test]
-        public void ReportFactory_WithRegisteredTypeButMissingService_ThrowsInvalidOperationException()
-        {
-            // Arrange
-            var fakeProvider = new FakeServiceProvider(); // 沒註冊 PdfReport (功能: 設定錯誤防呆、開發階段快速抓出注入錯誤)
-            var factory = new ReportFactory(fakeProvider);
-
-            // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() =>
-            {
-                factory.Create("pdf", 1024);
-            });
-
-            Assert.That(ex.Message, Does.Contain("has been registered"));
-        }
         #endregion
 
         #region ReportGeneratorTest
@@ -288,6 +234,135 @@ namespace SOLID_Prac1.Tests
 
             Assert.That(ex.Message, Is.EqualTo("報表產生失敗"));
         }
+        #endregion
+
+        #region ReportFactoryTest
+        [Test]
+        public void ReportFactory_WithPdfType_ReturnsValidatedReportDecorator()
+        {
+            // Arrange
+            var mockPdfReport = new Mock<PdfReport>();
+
+            var fakeProvider = new FakeServiceProvider();
+            fakeProvider.Register<PdfReport>(mockPdfReport.Object);
+
+            var factory = new ReportFactory(fakeProvider);
+
+            // Act
+            var result = factory.Create("pdf", 1024);
+
+            // Assert
+            Assert.IsInstanceOf<ValidatedReportDecorator>(result);
+        }
+
+        [Test] // ReportFactoryTest
+        public void ReportFactory_WithUnsupportedType_ThrowsArgumentException()
+        {
+            // Arrange
+            //var mockDocReport = new Mock<DocReport>(); // 因為要傳錯誤型別，所以不須註冊任何report
+
+            var fakeProvider = new FakeServiceProvider();
+            //fakeProvider.Register<DocReport>(mockDocReport.Object); // 因為要傳錯誤型別，所以不須註冊
+
+            var factory = new ReportFactory(fakeProvider);
+
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() =>
+            {
+                factory.Create("zip", 1024);
+            });
+
+            Assert.That(ex.Message, Is.EqualTo("Unsupported report type: zip"));
+        }
+
+        [Test]
+        public void ReportFactory_WithRegisteredTypeButMissingService_ThrowsInvalidOperationException()
+        {
+            // Arrange
+            var fakeProvider = new FakeServiceProvider(); // 沒註冊 PdfReport (功能: 設定錯誤防呆、開發階段快速抓出注入錯誤)
+            var factory = new ReportFactory(fakeProvider);
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                factory.Create("pdf", 1024);
+            });
+
+            Assert.That(ex.Message, Does.Contain("has been registered"));
+        }
+
+        [Test]
+        public void ReportFactory_WithPdfType_DoesNotThrow()
+        {
+            // Arrange
+            var mockPdfReport = new Mock<PdfReport>();
+
+            var fakeProvider = new FakeServiceProvider();
+            fakeProvider.Register<PdfReport>(mockPdfReport.Object);
+
+            var factory = new ReportFactory(fakeProvider);
+
+            // Act & Assert
+            Assert.DoesNotThrow(() =>
+            {
+                factory.Create("pdf", 1024);
+            });
+        }
+
+        [Test]
+        public void ReportFactory_WithPdfType_ReturnsExpectedDecorator()
+        {
+            var provider = new FakeServiceProvider();
+            provider.Register<PdfReport>(new PdfReport()); // 用真實 PdfReport（不要 mock）
+
+            var factory = new ReportFactory(provider);
+            var report = factory.Create("pdf", 1024);
+
+            var result = report.Generate(); // 無法驗證是否有被呼叫，但可驗證沒例外、回傳結果
+
+            Assert.IsInstanceOf<ValidatedReportDecorator>(report);
+            Assert.That(result, Is.Not.Null); // 或其他可接受的驗證
+        }
+
+        #region 錯誤範例
+        //public void ReportFactory_GeneratedReport_ShouldCallInnerReportGenerate()
+        //{
+        //    // Arange
+        //    var mockPdfReport = new Mock<PdfReport>();
+        //    mockPdfReport.Setup(r => r.Generate()).Returns("我是報表內容");
+
+        //    var provider = new FakeServiceProvider();
+        //    provider.Register<PdfReport>(mockPdfReport.Object);
+
+        //    var factory = new ReportFactory(provider);
+        //    var decoratedReport = factory.Create("pdf", 1024);
+
+        //    // Act
+        //    var result = decoratedReport.Generate(); // 會觸發 decorator → PdfReport，驗證內部是否被呼叫
+
+        //    // Assert
+        //    Assert.AreEqual("我是報表內容", result); // 回傳內容驗證
+        //    mockPdfReport.Verify(r => r.Generate(), Times.Once); // 行為驗證，確認有被呼叫過一次
+        //}
+        //public void ReportFactory_GeneratedReport_ShouldCallGenerate_WhenReportIsExecuted()
+        //{
+        //    // Arrange
+        //    var testReport = new TestPdfReport(); // 自訂可觀察版本
+        //    var provider = new FakeServiceProvider();
+        //    provider.Register<PdfReport>((PdfReport)testReport); // 型別對準
+
+        //    var factory = new ReportFactory(provider);
+        //    var decoratedReport = factory.Create("pdf", 1024);
+
+        //    // Act
+        //    var result = decoratedReport.Generate();
+
+        //    // Assert
+        //    Assert.AreEqual("Fake Pdf Content", result);
+        //    Assert.IsTrue(testReport.WasGenerateCalled);
+        //}
+        #endregion
+        
         #endregion
     }
 }
