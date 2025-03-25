@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SOLID_Prac1.Interface;
-using SOLID_Prac1.Services;
+using SOLID_Prac1.Services.Report;
+using SOLID_Prac1.Services.Validator;
 
 namespace SOLID_Prac1.Controllers
 {

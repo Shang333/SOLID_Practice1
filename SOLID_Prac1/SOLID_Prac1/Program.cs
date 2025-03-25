@@ -1,6 +1,7 @@
 using SOLID_Prac1.DTO;
 using SOLID_Prac1.Interface;
-using SOLID_Prac1.Services;
+using SOLID_Prac1.Services.Report;
+using SOLID_Prac1.Services.Validator;
 
 var builder = WebApplication.CreateBuilder(args);
 

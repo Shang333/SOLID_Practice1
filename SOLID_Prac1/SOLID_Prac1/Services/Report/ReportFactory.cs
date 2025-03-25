@@ -1,6 +1,7 @@
 ﻿using SOLID_Prac1.Interface;
+using SOLID_Prac1.Services.Validator;
 
-namespace SOLID_Prac1.Services
+namespace SOLID_Prac1.Services.Report
 {
     public class ReportFactory : IReportFactory
     {

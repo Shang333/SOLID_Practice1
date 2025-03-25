@@ -1,6 +1,6 @@
 ﻿using SOLID_Prac1.Interface;
 
-namespace SOLID_Prac1.Services
+namespace SOLID_Prac1.Services.Report
 {
     public class ReportGenerator
     {

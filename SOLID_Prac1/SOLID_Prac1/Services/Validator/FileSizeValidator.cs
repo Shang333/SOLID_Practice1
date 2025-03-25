@@ -2,7 +2,7 @@
 using SOLID_Prac1.DTO;
 using SOLID_Prac1.Interface;
 
-namespace SOLID_Prac1.Services
+namespace SOLID_Prac1.Services.Validator
 {
     public class FileSizeValidator : IFileValidator
     {

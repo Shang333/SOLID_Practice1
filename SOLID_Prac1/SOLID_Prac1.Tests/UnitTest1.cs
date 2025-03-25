@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Http;
-using SOLID_Prac1.Services;
 using Moq;
 using Microsoft.Extensions.Options;
 using SOLID_Prac1.DTO;
 using Microsoft.Extensions.DependencyInjection;
 using SOLID_Prac1.Interface;
+using SOLID_Prac1.Services.Report;
+using SOLID_Prac1.Services.Validator;
 
 namespace SOLID_Prac1.Tests
 {
