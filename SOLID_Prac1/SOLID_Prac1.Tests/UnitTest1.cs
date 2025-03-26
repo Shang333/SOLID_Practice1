@@ -266,20 +266,24 @@ namespace SOLID_Prac1.Tests
         [TestCase("valid.pdf", 0, false)]
         public void Validators_FullValidationProcess_WorksAsExpected(string fileName, long size, bool shouldPass)
         {
-            // Arrange: 模擬檔案
-            var mockFile = new Mock<IFormFile>();
-            mockFile.Setup(f => f.FileName).Returns(fileName);
-            mockFile.Setup(f => f.Length).Returns(size);
-
-            // 準備 validators
-            var options = new Mock<IOptions<UploadSettings>>();
-            options.Setup(o => o.Value).Returns(new UploadSettings
+            try
             {
-                AllowedExtensions = new[] { ".pdf", ".doc", ".xlsx" },
-                MaxUploadSize = 5 * 1024 * 1024 // 5MB
-            });
+                Console.WriteLine("測試開始");
 
-            var validators = new List<IFileValidator>
+                // Arrange: 模擬檔案
+                var mockFile = new Mock<IFormFile>();
+                mockFile.Setup(f => f.FileName).Returns(fileName);
+                mockFile.Setup(f => f.Length).Returns(size);
+
+                // 準備 validators
+                var options = new Mock<IOptions<UploadSettings>>();
+                options.Setup(o => o.Value).Returns(new UploadSettings
+                {
+                    AllowedExtensions = new[] { ".pdf", ".doc", ".xlsx" },
+                    MaxUploadSize = 5 * 1024 * 1024 // 5MB
+                });
+
+                var validators = new List<IFileValidator>
                                 {
                                     new FileExistenceValidator(),
                                     new FileNameValidator(),
@@ -287,31 +291,41 @@ namespace SOLID_Prac1.Tests
                                     new FileSizeValidator(options.Object)
                                 };
 
-            // 建立 fake report + decorator
-            var fakeReport = new TestPdfReport
-            {
-                File = mockFile.Object
-            };
+                // 建立 fake report + decorator
+                var fakeReport = new TestPdfReport2 { File = mockFile.Object };
 
-            var decorator = new ValidatedReportDecorator(fakeReport, validators);
+                var decorator = new ValidatedReportDecorator((IFileReport)fakeReport, (IEnumerable<IFileValidator>)validators); // 指定為新邏輯的建構子
 
-            // Act & Assert
-            if (shouldPass)
-            {
-                var result = decorator.Generate();
-                Assert.AreEqual("Fake Pdf Content", result);
-                Assert.IsTrue(fakeReport.WasGenerateCalled);
-            }
-            else
-            {
-                var ex = Assert.Throws<InvalidOperationException>(() =>
+                // Act & Assert
+                if (shouldPass)
                 {
-                    decorator.Generate();
-                });
+                    Console.WriteLine("shouldPass通過，開始執行");
+                    var result = decorator.Generate();
 
-                Console.WriteLine($"驗證錯誤訊息：{ex.Message}");
-                //Assert.IsFalse(fakeReport.WasGenerateCalled);
-                Assert.IsFalse(fakeReport.WasGenerateCalled, "Generate() 不應該被呼叫！");
+                    Console.WriteLine($"decorator.Generate() 回傳: {result}");
+                    Console.WriteLine($"WasGenerateCalled: {fakeReport.WasGenerateCalled}");
+                    Assert.AreEqual("Fake Pdf Content", result);
+                    Assert.IsTrue(fakeReport.WasGenerateCalled);
+                }
+                else
+                {
+                    var ex = Assert.Throws<InvalidOperationException>(() =>
+                    {
+                        decorator.Generate();
+                    });
+
+                    Console.WriteLine($"驗證錯誤訊息：{ex.Message}");
+                    //Assert.IsFalse(fakeReport.WasGenerateCalled);
+                    Assert.IsFalse(fakeReport.WasGenerateCalled, "Generate() 不應該被呼叫！");
+                }
+
+                Console.WriteLine("測試完成");
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"測試發生例外：{ex.GetType().Name} - {ex?.Message} - {ex?.InnerException}");
+                throw; // 保持原測試失敗行為
             }
         }
         #endregion
