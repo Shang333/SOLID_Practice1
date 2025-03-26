@@ -260,6 +260,14 @@ namespace SOLID_Prac1.Tests
             Assert.DoesNotThrow(() => validator.Validate(mockFile.Object));
         }
 
+        /// <summary>
+        /// 整合/流程測試: 
+        /// 1.假的報表 TestPdfReport2（模擬被包裝的業務邏輯） 2.檔案驗證器的流程（檢查檔案是否合法）
+        /// 3.ValidatedReportDecorator 裝飾器（幫你管流程） 4.使用 TestCase(...) 資料驅動多種情境
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="size"></param>
+        /// <param name="shouldPass"></param>
         [TestCase("valid.pdf", 1000, true)]
         [TestCase("bad..name.pdf", 1000, false)]
         [TestCase("valid.exe", 1000, false)]
